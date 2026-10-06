@@ -43,119 +43,140 @@
             min-height: 100vh;
         }
 
+        /* True Neumorphism (Soft UI) Styles */
         .neu-card {
-            background: #FFFFF7;
-            border-radius: 0.5rem;
-            box-shadow: 6px 6px 14px #cfcfc5, -6px -6px 14px #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.7);
-            transition: all 0.2s ease-in-out;
+            background: #E7E7DD;
+            border-radius: 1.25rem;
+            box-shadow: 9px 9px 20px #c5c5ba, -9px -9px 20px #ffffff;
+            border: none;
+            transition: all 0.25s ease-in-out;
+        }
+
+        .neu-card:hover {
+            box-shadow: 12px 12px 24px #bebeb3, -12px -12px 24px #ffffff;
         }
 
         .neu-panel {
             background: #E7E7DD;
-            border-radius: 0.5rem;
-            box-shadow: 6px 6px 14px #cfcfc5, -6px -6px 14px #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 1.25rem;
+            box-shadow: 8px 8px 18px #c5c5ba, -8px -8px 18px #ffffff;
+            border: none;
+        }
+
+        .neu-subcard {
+            background: #E7E7DD;
+            border-radius: 1rem;
+            box-shadow: 5px 5px 12px #c5c5ba, -5px -5px 12px #ffffff;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .neu-subcard:hover {
+            box-shadow: 7px 7px 16px #bebeb3, -7px -7px 16px #ffffff;
         }
 
         .neu-inset {
             background: #E7E7DD;
-            border-radius: 0.375rem;
-            box-shadow: inset 3px 3px 6px #cfcfc5, inset -3px -3px 6px #ffffff;
-            border: 1px solid #d5d5ca;
+            border-radius: 0.875rem;
+            box-shadow: inset 4px 4px 8px #c5c5ba, inset -4px -4px 8px #ffffff;
+            border: none;
         }
 
         .neu-input {
-            background: #FFFFF7;
+            background: #E7E7DD;
             color: #1D1D1B;
-            border-radius: 0.375rem;
-            box-shadow: inset 2px 2px 5px #d8d8ce, inset -2px -2px 5px #ffffff;
-            border: 1px solid #d5d5ca;
-            transition: all 0.15s ease;
+            border-radius: 0.875rem;
+            box-shadow: inset 4px 4px 8px #c5c5ba, inset -4px -4px 8px #ffffff;
+            border: none;
+            transition: all 0.2s ease;
         }
 
         .neu-input:focus {
             outline: none;
-            border-color: #1D1D1B;
-            box-shadow: inset 2px 2px 5px #cfcfc5, 0 0 0 1px #1D1D1B;
+            box-shadow: inset 5px 5px 10px #bebeb3, inset -5px -5px 10px #ffffff, 0 0 0 1px rgba(29, 29, 27, 0.15);
         }
 
         .neu-btn-primary {
             background: #1D1D1B;
             color: #FFFFF7;
-            border-radius: 0.375rem;
-            box-shadow: 4px 4px 10px rgba(29, 29, 27, 0.18);
-            transition: all 0.15s ease;
+            border-radius: 0.875rem;
+            box-shadow: 5px 5px 14px rgba(29, 29, 27, 0.3), -3px -3px 8px #ffffff;
+            border: none;
+            transition: all 0.2s ease;
         }
 
         .neu-btn-primary:hover {
-            background: #333330;
-            box-shadow: 2px 2px 6px rgba(29, 29, 27, 0.25);
+            background: #2b2b28;
+            box-shadow: 3px 3px 8px rgba(29, 29, 27, 0.4);
         }
 
         .neu-btn-secondary {
             background: #E7E7DD;
             color: #1D1D1B;
-            border-radius: 0.375rem;
-            box-shadow: 4px 4px 9px #cfcfc5, -4px -4px 9px #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            transition: all 0.15s ease;
+            border-radius: 0.875rem;
+            box-shadow: 5px 5px 12px #c5c5ba, -5px -5px 12px #ffffff;
+            border: none;
+            transition: all 0.2s ease;
         }
 
         .neu-btn-secondary:hover {
-            background: #dfdfd4;
-            box-shadow: 2px 2px 5px #cfcfc5, -2px -2px 5px #ffffff;
+            box-shadow: 3px 3px 8px #c5c5ba, -3px -3px 8px #ffffff;
+        }
+
+        .neu-btn-secondary:active,
+        .neu-btn-active {
+            box-shadow: inset 3px 3px 6px #c5c5ba, inset -3px -3px 6px #ffffff;
         }
 
         /* Subtle scrollbars */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #E7E7DD; }
-        ::-webkit-scrollbar-thumb { background: #cfcfc5; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #b5b5ab; }
+        ::-webkit-scrollbar-thumb { background: #c5c5ba; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #aeaea2; }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
     <!-- Navbar (Neumorphic Minimalist) -->
-    <header class="sticky top-0 z-50 bg-[#E7E7DD] border-b border-[#D5D5CA]">
+    <header class="sticky top-0 z-50 bg-[#E7E7DD] shadow-[0_4px_14px_#c5c5ba]">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <!-- Brand / Logo -->
                 <div class="flex items-center space-x-3">
                     <a href="{{ route('dashboard') }}" class="flex items-center space-x-2.5">
-                        <div class="w-8 h-8 rounded bg-[#1D1D1B] flex items-center justify-center font-bold text-sm text-[#FFFFF7]">
+                        <div class="w-9 h-9 rounded-xl bg-[#1D1D1B] flex items-center justify-center font-bold text-xs text-[#FFFFF7] shadow-[3px_3px_8px_rgba(29,29,27,0.3),-2px_-2px_6px_#ffffff]">
                             YS
                         </div>
                         <span class="text-lg font-bold tracking-tight text-[#1D1D1B]">YScrapy</span>
                     </a>
                 </div>
 
-                <!-- Navigation Links (Tanpa Emoji) -->
+                <!-- Navigation Links (Neumorphic Soft Tabs) -->
                 <nav class="hidden md:flex items-center space-x-2">
                     <a href="{{ route('dashboard') }}" 
-                       class="px-3.5 py-1.5 rounded text-xs font-semibold uppercase tracking-wider transition {{ request()->routeIs('dashboard') ? 'bg-[#FFFFF7] text-[#1D1D1B] shadow-[inset_2px_2px_4px_#cfcfc5,inset_-2px_-2px_4px_#ffffff]' : 'text-[#555552] hover:text-[#1D1D1B]' }}">
+                       class="px-4 py-2 rounded-xl text-xs font-semibold tracking-wider transition {{ request()->routeIs('dashboard') ? 'neu-inset text-[#1D1D1B]' : 'text-[#555552] hover:text-[#1D1D1B] hover:neu-btn-secondary' }}">
                         Dashboard
                     </a>
                     <a href="{{ route('scraper.index') }}" 
-                       class="px-3.5 py-1.5 rounded text-xs font-semibold uppercase tracking-wider transition {{ request()->routeIs('scraper.*') ? 'bg-[#FFFFF7] text-[#1D1D1B] shadow-[inset_2px_2px_4px_#cfcfc5,inset_-2px_-2px_4px_#ffffff]' : 'text-[#555552] hover:text-[#1D1D1B]' }}">
+                       class="px-4 py-2 rounded-xl text-xs font-semibold tracking-wider transition {{ request()->routeIs('scraper.*') ? 'neu-inset text-[#1D1D1B]' : 'text-[#555552] hover:text-[#1D1D1B] hover:neu-btn-secondary' }}">
                         Scraper Manual
                     </a>
                     <a href="{{ route('trending.index') }}" 
-                       class="px-3.5 py-1.5 rounded text-xs font-semibold uppercase tracking-wider transition {{ request()->routeIs('trending.*') ? 'bg-[#FFFFF7] text-[#1D1D1B] shadow-[inset_2px_2px_4px_#cfcfc5,inset_-2px_-2px_4px_#ffffff]' : 'text-[#555552] hover:text-[#1D1D1B]' }}">
+                       class="px-4 py-2 rounded-xl text-xs font-semibold tracking-wider transition {{ request()->routeIs('trending.*') ? 'neu-inset text-[#1D1D1B]' : 'text-[#555552] hover:text-[#1D1D1B] hover:neu-btn-secondary' }}">
                         Isu Trending
                     </a>
                     <a href="{{ route('watchlist.index') }}" 
-                       class="px-3.5 py-1.5 rounded text-xs font-semibold uppercase tracking-wider transition {{ request()->routeIs('watchlist.*') ? 'bg-[#FFFFF7] text-[#1D1D1B] shadow-[inset_2px_2px_4px_#cfcfc5,inset_-2px_-2px_4px_#ffffff]' : 'text-[#555552] hover:text-[#1D1D1B]' }}">
+                       class="px-4 py-2 rounded-xl text-xs font-semibold tracking-wider transition {{ request()->routeIs('watchlist.*') ? 'neu-inset text-[#1D1D1B]' : 'text-[#555552] hover:text-[#1D1D1B] hover:neu-btn-secondary' }}">
                         Pantauan Otomatis
                     </a>
                     <a href="{{ route('feedbacks.index') }}" 
-                       class="px-3.5 py-1.5 rounded text-xs font-semibold uppercase tracking-wider transition {{ request()->routeIs('feedbacks.*') ? 'bg-[#FFFFF7] text-[#1D1D1B] shadow-[inset_2px_2px_4px_#cfcfc5,inset_-2px_-2px_4px_#ffffff]' : 'text-[#555552] hover:text-[#1D1D1B]' }}">
+                       class="px-4 py-2 rounded-xl text-xs font-semibold tracking-wider transition {{ request()->routeIs('feedbacks.*') ? 'neu-inset text-[#1D1D1B]' : 'text-[#555552] hover:text-[#1D1D1B] hover:neu-btn-secondary' }}">
                         Semua Feedback
                     </a>
                 </nav>
 
                 <!-- Action Button -->
                 <div class="flex items-center space-x-3">
-                    <a href="{{ route('scraper.index') }}" class="neu-btn-primary px-3.5 py-1.5 text-xs font-medium flex items-center space-x-1.5">
+                    <a href="{{ route('scraper.index') }}" class="neu-btn-primary px-4 py-2 text-xs font-medium flex items-center space-x-1.5">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                         </svg>
@@ -170,16 +191,16 @@
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Flash Messages -->
         @if(session('success'))
-            <div class="mb-6 p-4 rounded-md neu-panel border border-[#B2DFDB] text-[#004D40] flex items-center justify-between text-xs sm:text-sm">
+            <div class="mb-6 p-4 neu-card text-[#2E7D32] flex items-center justify-between text-xs sm:text-sm font-medium">
                 <span>{{ session('success') }}</span>
-                <button type="button" onclick="this.parentElement.remove()" class="text-[#004D40] hover:opacity-75 font-bold">&times;</button>
+                <button type="button" onclick="this.parentElement.remove()" class="text-[#2E7D32] hover:opacity-75 font-bold text-base">&times;</button>
             </div>
         @endif
 
         @if(session('error'))
-            <div class="mb-6 p-4 rounded-md neu-panel border border-[#FFCDD2] text-[#B71C1C] flex items-center justify-between text-xs sm:text-sm">
+            <div class="mb-6 p-4 neu-card text-[#C62828] flex items-center justify-between text-xs sm:text-sm font-medium">
                 <span>{{ session('error') }}</span>
-                <button type="button" onclick="this.parentElement.remove()" class="text-[#B71C1C] hover:opacity-75 font-bold">&times;</button>
+                <button type="button" onclick="this.parentElement.remove()" class="text-[#C62828] hover:opacity-75 font-bold text-base">&times;</button>
             </div>
         @endif
 
@@ -187,7 +208,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-[#E7E7DD] border-t border-[#D5D5CA] mt-auto py-6">
+    <footer class="bg-[#E7E7DD] mt-auto py-6">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-[#555552] space-y-2 sm:space-y-0">
             <div>
                 <span class="font-bold text-[#1D1D1B]">YScrapy</span> &mdash; Multi-Platform Web Scraper & Public Sentiment Analysis

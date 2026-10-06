@@ -10,7 +10,7 @@
         </div>
     </div>
 
-    <!-- Scraper Form (Neumorphic Card) -->
+    <!-- Scraper Form (True Neumorphic Card) -->
     <div class="neu-card p-6 sm:p-8">
         <form id="scrapeForm" action="{{ route('scraper.store') }}" method="POST" class="space-y-6">
             @csrf
@@ -18,58 +18,58 @@
             <!-- 1. Pilih Platform -->
             <div>
                 <label class="block text-xs font-bold uppercase tracking-wider text-[#1D1D1B] mb-3">1. Pilih Sumber / Platform</label>
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
                     <!-- Option All -->
                     <label class="cursor-pointer">
                         <input type="radio" name="platform" value="all" class="peer sr-only" checked>
-                        <div class="p-3.5 rounded-md text-center bg-[#FFFFF7] border border-[#D5D5CA] neu-inset-peer peer-checked:bg-[#1D1D1B] peer-checked:text-[#FFFFF7] peer-checked:border-[#1D1D1B] hover:border-[#1D1D1B] transition shadow-sm">
+                        <div class="p-3.5 rounded-xl text-center neu-btn-secondary peer-checked:neu-inset peer-checked:font-bold transition">
                             <div class="text-xs font-semibold">Semua Platform</div>
-                            <div class="text-[10px] opacity-75 mt-0.5">Multi-sumber</div>
+                            <div class="text-[10px] text-[#555552] mt-0.5">Multi-sumber</div>
                         </div>
                     </label>
 
                     <!-- Option News -->
                     <label class="cursor-pointer">
                         <input type="radio" name="platform" value="news" class="peer sr-only">
-                        <div class="p-3.5 rounded-md text-center bg-[#FFFFF7] border border-[#D5D5CA] peer-checked:bg-[#1D1D1B] peer-checked:text-[#FFFFF7] peer-checked:border-[#1D1D1B] hover:border-[#1D1D1B] transition shadow-sm">
+                        <div class="p-3.5 rounded-xl text-center neu-btn-secondary peer-checked:neu-inset peer-checked:font-bold transition">
                             <div class="text-xs font-semibold">Portal Berita</div>
-                            <div class="text-[10px] opacity-75 mt-0.5">Kompas, Detik, dll</div>
+                            <div class="text-[10px] text-[#555552] mt-0.5">Kompas, Detik, dll</div>
                         </div>
                     </label>
 
                     <!-- Option YouTube -->
                     <label class="cursor-pointer">
                         <input type="radio" name="platform" value="youtube" class="peer sr-only">
-                        <div class="p-3.5 rounded-md text-center bg-[#FFFFF7] border border-[#D5D5CA] peer-checked:bg-[#1D1D1B] peer-checked:text-[#FFFFF7] peer-checked:border-[#1D1D1B] hover:border-[#1D1D1B] transition shadow-sm">
+                        <div class="p-3.5 rounded-xl text-center neu-btn-secondary peer-checked:neu-inset peer-checked:font-bold transition">
                             <div class="text-xs font-semibold">YouTube</div>
-                            <div class="text-[10px] opacity-75 mt-0.5">Komentar Video</div>
+                            <div class="text-[10px] text-[#555552] mt-0.5">Komentar Video</div>
                         </div>
                     </label>
 
                     <!-- Option Twitter -->
                     <label class="cursor-pointer">
                         <input type="radio" name="platform" value="twitter" class="peer sr-only">
-                        <div class="p-3.5 rounded-md text-center bg-[#FFFFF7] border border-[#D5D5CA] peer-checked:bg-[#1D1D1B] peer-checked:text-[#FFFFF7] peer-checked:border-[#1D1D1B] hover:border-[#1D1D1B] transition shadow-sm">
+                        <div class="p-3.5 rounded-xl text-center neu-btn-secondary peer-checked:neu-inset peer-checked:font-bold transition">
                             <div class="text-xs font-semibold">Twitter / X</div>
-                            <div class="text-[10px] opacity-75 mt-0.5">Tweet & Reaksi</div>
+                            <div class="text-[10px] text-[#555552] mt-0.5">Tweet & Reaksi</div>
                         </div>
                     </label>
 
                     <!-- Option Google Reviews -->
                     <label class="cursor-pointer">
                         <input type="radio" name="platform" value="google_review" class="peer sr-only">
-                        <div class="p-3.5 rounded-md text-center bg-[#FFFFF7] border border-[#D5D5CA] peer-checked:bg-[#1D1D1B] peer-checked:text-[#FFFFF7] peer-checked:border-[#1D1D1B] hover:border-[#1D1D1B] transition shadow-sm">
+                        <div class="p-3.5 rounded-xl text-center neu-btn-secondary peer-checked:neu-inset peer-checked:font-bold transition">
                             <div class="text-xs font-semibold">Google Review</div>
-                            <div class="text-[10px] opacity-75 mt-0.5">Ulasan Publik</div>
+                            <div class="text-[10px] text-[#555552] mt-0.5">Ulasan Publik</div>
                         </div>
                     </label>
 
                     <!-- Option Custom URL -->
                     <label class="cursor-pointer">
                         <input type="radio" name="platform" value="custom" class="peer sr-only">
-                        <div class="p-3.5 rounded-md text-center bg-[#FFFFF7] border border-[#D5D5CA] peer-checked:bg-[#1D1D1B] peer-checked:text-[#FFFFF7] peer-checked:border-[#1D1D1B] hover:border-[#1D1D1B] transition shadow-sm">
+                        <div class="p-3.5 rounded-xl text-center neu-btn-secondary peer-checked:neu-inset peer-checked:font-bold transition">
                             <div class="text-xs font-semibold">Direct URL</div>
-                            <div class="text-[10px] opacity-75 mt-0.5">Web Bebas</div>
+                            <div class="text-[10px] text-[#555552] mt-0.5">Web Bebas</div>
                         </div>
                     </label>
                 </div>
@@ -83,7 +83,7 @@
                     </label>
                     <input type="text" id="queryInput" name="query" required
                            placeholder="Contoh: Layanan Paspor Imigrasi, Kebijakan Tarif PPN, iPhone 16 Pro, dll..."
-                           class="neu-input w-full px-4 py-2.5 text-xs">
+                           class="neu-input w-full px-4 py-3 text-xs placeholder:text-[#555552]/70">
                     <p class="text-[11px] text-[#555552] mt-1.5">
                         Masukkan isu, nama produk, instansi, atau tautan video YouTube/URL web spesifik.
                     </p>
@@ -93,7 +93,7 @@
                     <label for="limitInput" class="block text-xs font-bold uppercase tracking-wider text-[#1D1D1B] mb-2">
                         3. Batas Data (Limit)
                     </label>
-                    <select id="limitInput" name="limit" class="neu-input w-full px-4 py-2.5 text-xs">
+                    <select id="limitInput" name="limit" class="neu-input w-full px-4 py-3 text-xs">
                         <option value="10">10 Data Komentar</option>
                         <option value="20" selected>20 Data Komentar</option>
                         <option value="40">40 Data Komentar</option>
@@ -106,7 +106,7 @@
             <!-- Options & Submit Button -->
             <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <label class="flex items-center space-x-2 text-xs text-[#555552] cursor-pointer">
-                    <input type="checkbox" name="run_in_background" value="1" class="rounded border-[#D5D5CA] text-[#1D1D1B] focus:ring-0">
+                    <input type="checkbox" name="run_in_background" value="1" class="rounded border-0 neu-inset text-[#1D1D1B] focus:ring-0">
                     <span>Jalankan di Latar Belakang (Background Queue Worker)</span>
                 </label>
 
@@ -121,8 +121,8 @@
     </div>
 
     <!-- History / Sesi Scrape Sebelumnya -->
-    <div class="neu-card p-6 space-y-4">
-        <div class="flex items-center justify-between border-b border-[#D5D5CA] pb-3">
+    <div class="neu-card p-6 sm:p-8 space-y-4">
+        <div class="flex items-center justify-between pb-3">
             <h2 class="text-sm font-bold uppercase tracking-wider text-[#1D1D1B]">Riwayat Sesi Scraping</h2>
             <span class="text-xs text-[#555552]">{{ $jobs->total() }} Sesi Tercatat</span>
         </div>
@@ -130,7 +130,7 @@
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs">
                 <thead>
-                    <tr class="border-b border-[#D5D5CA] text-[#555552] uppercase tracking-wider text-[11px]">
+                    <tr class="text-[#555552] uppercase tracking-wider text-[11px]">
                         <th class="py-3 px-4">Topik / Query</th>
                         <th class="py-3 px-4">Platform</th>
                         <th class="py-3 px-4 text-center">Total</th>
@@ -141,17 +141,17 @@
                         <th class="py-3 px-4 text-right">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-[#E7E7DD] text-[#1D1D1B]">
+                <tbody class="text-[#1D1D1B] space-y-2">
                     @forelse($jobs as $job)
-                        <tr class="hover:bg-[#E7E7DD]/30 transition">
+                        <tr class="hover:bg-[#dfdfd4]/50 transition rounded-xl">
                             <td class="py-3.5 px-4 font-semibold text-[#1D1D1B] max-w-xs truncate">
                                 <a href="{{ route('scraper.show', $job->id) }}" class="hover:underline">
                                     {{ $job->target_query }}
                                 </a>
                             </td>
                             <td class="py-3.5 px-4">
-                                <span class="px-2 py-0.5 rounded text-[11px] bg-[#E7E7DD] border border-[#D5D5CA] text-[#1D1D1B]">
-                                    {{ ucfirst($job->platform) }}
+                                <span class="px-2.5 py-1 rounded-lg text-[10px] neu-inset text-[#1D1D1B] uppercase font-semibold">
+                                    {{ $job->platform }}
                                 </span>
                             </td>
                             <td class="py-3.5 px-4 text-center font-bold">{{ $job->total_scraped }}</td>
@@ -163,8 +163,8 @@
                             </td>
                             <td class="py-3.5 px-4 text-right">
                                 <div class="flex items-center justify-end space-x-2">
-                                    <a href="{{ route('scraper.show', $job->id) }}" class="p-1.5 rounded text-[#555552] hover:text-[#1D1D1B] hover:bg-[#E7E7DD] transition" title="Lihat Laporan">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <a href="{{ route('scraper.show', $job->id) }}" class="p-2 rounded-xl neu-btn-secondary text-[#555552] hover:text-[#1D1D1B] transition" title="Lihat Laporan">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                         </svg>
@@ -172,8 +172,8 @@
                                     <form action="{{ route('scraper.destroy', $job->id) }}" method="POST" onsubmit="return confirm('Hapus sesi ini beserta datanya?');" class="inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="p-1.5 rounded text-[#C62828] hover:bg-[#FFCDD2]/30 transition" title="Hapus Sesi">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <button type="submit" class="p-2 rounded-xl neu-btn-secondary text-[#C62828] hover:bg-[#FFCDD2]/30 transition" title="Hapus Sesi">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                             </svg>
                                         </button>
