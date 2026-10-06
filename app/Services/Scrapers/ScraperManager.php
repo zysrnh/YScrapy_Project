@@ -38,6 +38,7 @@ class ScraperManager
     public function execute(string $platform, string $query, int $limit = 20): ScrapeJob
     {
         $rawFeedbacks = [];
+        $cleanTopic = NewsScraper::extractCleanTopic($query);
 
         if ($platform === 'all') {
             $perPlatformLimit = max(3, (int)ceil($limit / 4));
@@ -62,11 +63,11 @@ class ScraperManager
         }
 
         // Simpan ke Database dalam transaksi
-        return DB::transaction(function () use ($platform, $query, $limit, $rawFeedbacks) {
+        return DB::transaction(function () use ($platform, $query, $cleanTopic, $limit, $rawFeedbacks) {
             $job = ScrapeJob::create([
-                'title' => 'Analisis Opini Publik: ' . $query,
+                'title' => 'Analisis Opini: ' . $cleanTopic,
                 'platform' => $platform,
-                'target_query' => $query,
+                'target_query' => $cleanTopic,
                 'limit_requested' => $limit,
                 'status' => 'processing',
             ]);
@@ -78,7 +79,7 @@ class ScraperManager
             $savedCount = 0;
 
             foreach ($rawFeedbacks as $item) {
-                $rawContent = $item['content_raw'] ?? '';
+                $rawContent = NewsScraper::sanitizeContent($item['content_raw'] ?? '');
                 if (empty(trim($rawContent))) continue;
 
                 // Eksekusi NLP sentiment analysis

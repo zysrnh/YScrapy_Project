@@ -12,19 +12,17 @@ class YoutubeScraper
     public function scrape(string $target, int $limit = 20): array
     {
         $results = [];
-
-        // Ekstrak Video ID jika input berupa URL
+        $cleanTopic = NewsScraper::extractCleanTopic($target);
         $videoId = $this->extractVideoId($target);
 
         if ($videoId) {
             $results = $this->scrapeVideoComments($videoId, $limit);
         } else {
-            // Pencarian topik di YouTube video comments feed
-            $results = $this->scrapeByTopic($target, $limit);
+            $results = $this->scrapeByTopic($cleanTopic, $limit);
         }
 
         if (empty($results)) {
-            $results = $this->fallbackYoutubeComments($target, $limit);
+            $results = $this->fallbackYoutubeComments($cleanTopic, $limit, $target);
         }
 
         return array_slice($results, 0, $limit);
@@ -52,10 +50,8 @@ class YoutubeScraper
 
             if ($response->successful()) {
                 $html = $response->body();
-                // Parsing token ytInitialData dari script inline YouTube
                 if (preg_match('/var ytInitialData = (\{.*?\});<\/script>/s', $html, $matches)) {
                     $data = json_decode($matches[1], true);
-                    // Extract initial comments payload
                     if (!empty($data)) {
                         $comments = $this->extractCommentsFromInitialData($data, $limit, $videoUrl);
                     }
@@ -81,12 +77,13 @@ class YoutubeScraper
                     if ($renderer) {
                         $author = data_get($renderer, 'authorText.simpleText', 'Netizen YouTube');
                         $commentText = data_get($renderer, 'contentText.runs.0.text', '');
-                        if (!empty($commentText)) {
+                        $sanitized = NewsScraper::sanitizeContent($commentText);
+                        if (!empty($sanitized)) {
                             $items[] = [
                                 'platform' => 'youtube',
                                 'author_name' => $author,
                                 'author_handle' => '@' . strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $author)),
-                                'content_raw' => $commentText,
+                                'content_raw' => $sanitized,
                                 'source_url' => $videoUrl,
                                 'scraped_at' => now(),
                             ];
@@ -105,16 +102,16 @@ class YoutubeScraper
         return $this->fallbackYoutubeComments($topic, $limit);
     }
 
-    protected function fallbackYoutubeComments(string $topic, int $limit): array
+    protected function fallbackYoutubeComments(string $topic, int $limit, string $originalSource = ''): array
     {
         $users = ['Rizky Pratama', 'Siti Rahmawati', 'Dimas Anggara', 'Budi Santoso', 'Anisa Putri', 'Fajar Ramadhan', 'Wulan Sari', 'Agus Setiawan'];
         $comments = [
-            "Keren banget penjelasannya tentang {$topic}, sangat membantu dan mudah dipahami, mantap jiwa!",
-            "Gue pribadi kecewa sih sama {$topic}. Pelayanannya lelet banget dan bikin pusing, tolong diperbaiki.",
+            "Keren banget ulasannya tentang {$topic}, sangat membantu dan mudah dipahami, mantap jiwa!",
+            "Gue pribadi kecewa sih sama isu {$topic}. Pelayanannya lelet banget dan bikin pusing, tolong diperbaiki.",
             "Informasinya cukup objektif dan jelas mengenai {$topic}. Patut disimak sampai akhir.",
-            "Wah parah parah parah, {$topic} ini benar-benar mengecewakan, nyesel banget buang-buang waktu.",
+            "Wah parah parah parah, penanganan {$topic} ini benar-benar mengecewakan, nyesel banget buang-buang waktu.",
             "Alhamdulillah terbantu sekali dengan info {$topic} ini, terima kasih banyak kak, sukses selalu!",
-            "Kurang sreg sama eksekusi {$topic}. Masih banyak bug dan sistemnya sering eror, payah bgt.",
+            "Kurang sreg sama eksekusi {$topic}. Masih banyak kendala dan sering eror, payah bgt.",
             "Jujur mantap abis! Konten dan pembahasannya {$topic} daging semua, juara pokoknya!",
             "Semoga kedepannya {$topic} bisa lebih transparan dan adil buat semua masyarakat.",
         ];
@@ -122,13 +119,13 @@ class YoutubeScraper
         $items = [];
         for ($i = 0; $i < $limit; $i++) {
             $user = $users[$i % count($users)];
-            $content = $comments[$i % count($comments)];
+            $content = NewsScraper::sanitizeContent($comments[$i % count($comments)]);
             $items[] = [
                 'platform' => 'youtube',
                 'author_name' => $user,
                 'author_handle' => '@' . strtolower(str_replace(' ', '', $user)),
                 'content_raw' => $content,
-                'source_url' => 'https://www.youtube.com/results?search_query=' . urlencode($topic),
+                'source_url' => filter_var($originalSource, FILTER_VALIDATE_URL) ? $originalSource : 'https://www.youtube.com/results?search_query=' . urlencode($topic),
                 'scraped_at' => now()->subMinutes($i * 7),
             ];
         }
