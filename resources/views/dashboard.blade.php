@@ -6,9 +6,17 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white">Dashboard Sentimen Publik</h1>
-            <p class="text-sm text-ys-muted mt-1">Pemantauan persepsi, ulasan, dan komentar publik dari berbagai platform.</p>
+            <p class="text-sm text-ys-muted mt-1">Pemantauan persepsi, ulasan, dan komentar publik dari berbagai platform secara manual maupun otomatis.</p>
         </div>
         <div class="flex items-center space-x-3">
+            <a href="{{ route('trending.index') }}" class="glass-card px-3.5 py-2 rounded-md text-xs font-semibold text-white flex items-center space-x-1.5 hover:border-ys-muted transition">
+                <span>🔥</span>
+                <span>Isu Trending</span>
+            </a>
+            <a href="{{ route('watchlist.index') }}" class="glass-card px-3.5 py-2 rounded-md text-xs font-semibold text-white flex items-center space-x-1.5 hover:border-ys-muted transition">
+                <span>⚡</span>
+                <span>Watchlist ({{ $activeWatchlistsCount }})</span>
+            </a>
             <a href="{{ route('export.csv') }}" class="glass-card px-3.5 py-2 rounded-md text-xs font-medium text-ys-main hover:text-white flex items-center space-x-2">
                 <svg class="w-4 h-4 text-ys-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
@@ -19,10 +27,38 @@
                 <svg class="w-4 h-4 text-ys-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
-                <span>Mulai Scraping Baru</span>
+                <span>Scrape Baru</span>
             </a>
         </div>
     </div>
+
+    <!-- Quick Auto-Trending Highlights -->
+    @if(!empty($topTrending))
+        <div class="glass-panel p-4 rounded-md border-ys-border/40">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-center space-x-2">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 uppercase tracking-wider">
+                        Trending Sekarang
+                    </span>
+                    <span class="text-xs text-white font-medium truncate max-w-md">
+                        "{{ $topTrending[0]['title'] ?? '' }}"
+                    </span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <form action="{{ route('trending.scrape') }}" method="POST" class="inline">
+                        @csrf
+                        <input type="hidden" name="keyword" value="{{ $topTrending[0]['keyword'] ?? '' }}">
+                        <button type="submit" class="px-2.5 py-1 rounded bg-ys-glass border border-ys-border text-xs text-white hover:bg-ys-border transition">
+                            Scrape Isu Ini &rarr;
+                        </button>
+                    </form>
+                    <a href="{{ route('trending.index') }}" class="text-xs text-ys-muted hover:text-white underline">
+                        Lihat Semua Isu
+                    </a>
+                </div>
+            </div>
+        </div>
+    @endif
 
     <!-- Metrics Cards (Glassmorphism, Minimal Rounded) -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -162,7 +198,7 @@
                     </a>
                 @empty
                     <div class="text-center text-xs text-ys-muted py-8">
-                        Belum ada sesi scraping. Klik tombol <strong>Mulai Scraping Baru</strong> di atas!
+                        Belum ada sesi scraping. Klik tombol <strong>Scrape Baru</strong> di atas!
                     </div>
                 @endforelse
             </div>
@@ -226,9 +262,9 @@
                     datasets: [{
                         data: [{{ $positiveCount }}, {{ $neutralCount }}, {{ $negativeCount }}],
                         backgroundColor: [
-                            'rgba(16, 185, 129, 0.75)', // Positif Emerald
-                            'rgba(155, 168, 171, 0.75)', // Netral Slate (#9BA8AB)
-                            'rgba(239, 68, 68, 0.75)'   // Negatif Rose
+                            'rgba(16, 185, 129, 0.75)',
+                            'rgba(155, 168, 171, 0.75)',
+                            'rgba(239, 68, 68, 0.75)'
                         ],
                         borderColor: '#11212D',
                         borderWidth: 2,
@@ -266,7 +302,7 @@
                     datasets: [{
                         label: 'Total Data Scraped',
                         data: platformData,
-                        backgroundColor: 'rgba(74, 92, 106, 0.75)', // #4A5C6A
+                        backgroundColor: 'rgba(74, 92, 106, 0.75)',
                         borderColor: '#9BA8AB',
                         borderWidth: 1,
                         borderRadius: 4

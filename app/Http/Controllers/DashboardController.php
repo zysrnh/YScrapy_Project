@@ -4,17 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\ScrapeJob;
 use App\Models\ScrapedFeedback;
+use App\Models\Watchlist;
+use App\Services\Trending\TrendingDiscoveryService;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(TrendingDiscoveryService $trendingService)
     {
         $totalJobs = ScrapeJob::count();
         $totalFeedbacks = ScrapedFeedback::count();
         $positiveCount = ScrapedFeedback::where('sentiment_label', 'positive')->count();
         $neutralCount = ScrapedFeedback::where('sentiment_label', 'neutral')->count();
         $negativeCount = ScrapedFeedback::where('sentiment_label', 'negative')->count();
+
+        $activeWatchlistsCount = Watchlist::where('is_active', true)->count();
+        $topTrending = $trendingService->getTrendingTopics(3);
 
         $recentJobs = ScrapeJob::withCount('feedbacks')
             ->latest()
@@ -38,6 +43,8 @@ class DashboardController extends Controller
             'positiveCount',
             'neutralCount',
             'negativeCount',
+            'activeWatchlistsCount',
+            'topTrending',
             'recentJobs',
             'recentFeedbacks',
             'platforms'

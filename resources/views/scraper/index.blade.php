@@ -109,8 +109,13 @@
                 </div>
             </div>
 
-            <!-- Submit Button -->
-            <div class="pt-2 flex items-center justify-end">
+            <!-- Options & Submit Button -->
+            <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <label class="flex items-center space-x-2 text-xs text-ys-muted cursor-pointer">
+                    <input type="checkbox" name="run_in_background" value="1" class="rounded bg-ys-glass border-ys-border text-ys-muted focus:ring-0">
+                    <span>Jalankan di Latar Belakang (Background Queue Worker)</span>
+                </label>
+
                 <button type="submit" id="submitBtn" class="glass-btn-primary px-6 py-2.5 rounded-md text-sm font-semibold flex items-center space-x-2">
                     <svg class="w-4 h-4 text-ys-main" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ScrapeJob;
 use App\Models\ScrapedFeedback;
 use App\Services\Scrapers\ScraperManager;
+use App\Jobs\ProcessScrapeJob;
 use Illuminate\Http\Request;
 
 class ScraperController extends Controller
@@ -28,16 +29,29 @@ class ScraperController extends Controller
             'platform' => 'required|string|in:all,news,youtube,twitter,google_review,custom',
             'query' => 'required|string|max:500',
             'limit' => 'required|integer|min:3|max:100',
+            'run_in_background' => 'nullable|boolean',
         ]);
 
+        $runInBackground = $request->boolean('run_in_background');
+
         try {
+            if ($runInBackground) {
+                ProcessScrapeJob::dispatch(
+                    $validated['platform'],
+                    $validated['query'],
+                    (int)$validated['limit']
+                );
+
+                return redirect()->route('scraper.index')->with('success', "Tugas scraping untuk '{$validated['query']}' telah dikirim ke Background Queue Worker!");
+            }
+
             $job = $this->scraperManager->execute(
                 $validated['platform'],
                 $validated['query'],
                 (int)$validated['limit']
             );
 
-            return redirect()->route('scraper.show', $job->id)->with('success', "Scraping selesai! {$job->total_scraped} data opini & sentimen berhasil dianalisis.");
+            return redirect()->route('scraper.show', $job->id)->with('success', "Scraping selesai! {$job->total_scraped} data opini publik berhasil dianalisis.");
         } catch (\Throwable $e) {
             return redirect()->back()->with('error', 'Gagal memproses scraping: ' . $e->getMessage())->withInput();
         }

@@ -103,24 +103,6 @@
             box-shadow: 0 4px 14px rgba(37, 55, 69, 0.6);
         }
 
-        .badge-pos {
-            background: rgba(16, 185, 129, 0.15);
-            color: #34D399;
-            border: 1px solid rgba(16, 185, 129, 0.35);
-        }
-
-        .badge-neu {
-            background: rgba(155, 168, 171, 0.15);
-            color: #CCD0CF;
-            border: 1px solid rgba(155, 168, 171, 0.35);
-        }
-
-        .badge-neg {
-            background: rgba(239, 68, 68, 0.15);
-            color: #F87171;
-            border: 1px solid rgba(239, 68, 68, 0.35);
-        }
-
         /* Subtle scrollbars */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #06141B; }
@@ -151,26 +133,36 @@
                 <!-- Navigation Links -->
                 <nav class="hidden md:flex items-center space-x-1">
                     <a href="{{ route('dashboard') }}" 
-                       class="px-3.5 py-2 rounded-md text-sm font-medium transition {{ request()->routeIs('dashboard') ? 'bg-ys-glass text-white border border-ys-border' : 'text-ys-muted hover:text-white hover:bg-ys-glass/40' }}">
+                       class="px-3 py-2 rounded-md text-xs font-semibold uppercase tracking-wider transition {{ request()->routeIs('dashboard') ? 'bg-ys-glass text-white border border-ys-border' : 'text-ys-muted hover:text-white hover:bg-ys-glass/40' }}">
                         Dashboard
                     </a>
                     <a href="{{ route('scraper.index') }}" 
-                       class="px-3.5 py-2 rounded-md text-sm font-medium transition {{ request()->routeIs('scraper.*') ? 'bg-ys-glass text-white border border-ys-border' : 'text-ys-muted hover:text-white hover:bg-ys-glass/40' }}">
-                        Scraper Engine
+                       class="px-3 py-2 rounded-md text-xs font-semibold uppercase tracking-wider transition {{ request()->routeIs('scraper.*') ? 'bg-ys-glass text-white border border-ys-border' : 'text-ys-muted hover:text-white hover:bg-ys-glass/40' }}">
+                        Scraper Manual
+                    </a>
+                    <a href="{{ route('trending.index') }}" 
+                       class="px-3 py-2 rounded-md text-xs font-semibold uppercase tracking-wider transition flex items-center space-x-1.5 {{ request()->routeIs('trending.*') ? 'bg-ys-glass text-white border border-ys-border' : 'text-ys-muted hover:text-white hover:bg-ys-glass/40' }}">
+                        <span>🔥</span>
+                        <span>Isu Trending</span>
+                    </a>
+                    <a href="{{ route('watchlist.index') }}" 
+                       class="px-3 py-2 rounded-md text-xs font-semibold uppercase tracking-wider transition flex items-center space-x-1.5 {{ request()->routeIs('watchlist.*') ? 'bg-ys-glass text-white border border-ys-border' : 'text-ys-muted hover:text-white hover:bg-ys-glass/40' }}">
+                        <span>⚡</span>
+                        <span>Pantauan Otomatis</span>
                     </a>
                     <a href="{{ route('feedbacks.index') }}" 
-                       class="px-3.5 py-2 rounded-md text-sm font-medium transition {{ request()->routeIs('feedbacks.*') ? 'bg-ys-glass text-white border border-ys-border' : 'text-ys-muted hover:text-white hover:bg-ys-glass/40' }}">
+                       class="px-3 py-2 rounded-md text-xs font-semibold uppercase tracking-wider transition {{ request()->routeIs('feedbacks.*') ? 'bg-ys-glass text-white border border-ys-border' : 'text-ys-muted hover:text-white hover:bg-ys-glass/40' }}">
                         Semua Feedback
                     </a>
                 </nav>
 
                 <!-- Action Button -->
                 <div class="flex items-center space-x-3">
-                    <a href="{{ route('scraper.index') }}" class="glass-btn-primary px-4 py-2 rounded-md text-sm font-medium flex items-center space-x-2">
-                        <svg class="w-4 h-4 text-ys-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="{{ route('scraper.index') }}" class="glass-btn-primary px-3.5 py-1.5 rounded-md text-xs font-medium flex items-center space-x-1.5">
+                        <svg class="w-3.5 h-3.5 text-ys-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                         </svg>
-                        <span>Mulai Scrape</span>
+                        <span>Scrape Baru</span>
                     </a>
                 </div>
             </div>
@@ -181,7 +173,7 @@
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Flash Messages -->
         @if(session('success'))
-            <div class="mb-6 p-4 rounded-md bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 flex items-center justify-between">
+            <div class="mb-6 p-4 rounded-md bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 flex items-center justify-between text-xs sm:text-sm">
                 <div class="flex items-center space-x-2">
                     <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -193,7 +185,7 @@
         @endif
 
         @if(session('error'))
-            <div class="mb-6 p-4 rounded-md bg-rose-950/40 border border-rose-500/40 text-rose-300 flex items-center justify-between">
+            <div class="mb-6 p-4 rounded-md bg-rose-950/40 border border-rose-500/40 text-rose-300 flex items-center justify-between text-xs sm:text-sm">
                 <div class="flex items-center space-x-2">
                     <svg class="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -214,7 +206,7 @@
                 <span class="font-bold text-ys-main">YScrapy</span> &copy; {{ date('Y') }} &mdash; Multi-Platform Web Scraper & Public Sentiment Analysis
             </div>
             <div class="flex items-center space-x-4">
-                <span>Color Palette: #06141B - #CCD0CF</span>
+                <span>Auto-Scheduler Active</span>
                 <span>•</span>
                 <span>Glassmorphism UI</span>
             </div>
