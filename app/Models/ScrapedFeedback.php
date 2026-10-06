@@ -38,12 +38,15 @@ class ScrapedFeedback extends Model
         return $this->belongsTo(ScrapeJob::class, 'scrape_job_id');
     }
 
+    /**
+     * Badge status sentimen bersih & minimalis (Claymorphism palette).
+     */
     public function getSentimentBadgeClassAttribute(): string
     {
         return match ($this->sentiment_label) {
-            'positive' => 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.2)]',
-            'negative' => 'bg-rose-500/15 text-rose-400 border border-rose-500/30 shadow-[0_0_12px_rgba(244,63,94,0.2)]',
-            default => 'bg-[#9BA8AB]/15 text-[#CCD0CF] border border-[#9BA8AB]/30 shadow-[0_0_12px_rgba(155,168,171,0.15)]',
+            'positive' => 'bg-[#2E7D32]/10 text-[#2E7D32] border border-[#2E7D32]/25',
+            'negative' => 'bg-[#C62828]/10 text-[#C62828] border border-[#C62828]/25',
+            default => 'bg-[#1D1D1B]/5 text-[#555552] border border-[#D5D5C8]',
         };
     }
 
@@ -57,20 +60,20 @@ class ScrapedFeedback extends Model
     }
 
     /**
-     * Fallback gambar jika thumbnail asli kosong.
+     * Thumbnail gambar: Utamakan foto asli. Jika ulasan netizen, gunakan avatar dummy minimalis.
      */
-    public function getDisplayThumbnailAttribute(): string
+    public function getDisplayThumbnailAttribute(): ?string
     {
-        if (!empty($this->thumbnail_url)) {
+        if (!empty($this->thumbnail_url) && !str_contains($this->thumbnail_url, 'photo-1585829365295')) {
             return $this->thumbnail_url;
         }
 
-        return match ($this->platform) {
-            'youtube' => 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=300&q=80',
-            'news' => 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=300&q=80',
-            'twitter' => 'https://images.unsplash.com/photo-1611605698335-8b1569810432?w=300&q=80',
-            'google_review' => 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=300&q=80',
-            default => 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=300&q=80',
-        };
+        // Untuk komentar netizen (YouTube, Twitter, Review): gunakan dummy avatar monokrom Veersa
+        if (in_array($this->platform, ['youtube', 'twitter', 'google_review'])) {
+            $name = urlencode($this->author_name ?: 'User');
+            return "https://ui-avatars.com/api/?name={$name}&background=E7E7DD&color=1D1D1B&bold=true&size=128";
+        }
+
+        return null;
     }
 }

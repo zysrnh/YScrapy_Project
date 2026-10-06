@@ -1,30 +1,27 @@
 <!DOCTYPE html>
-<html lang="id" class="dark">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title ?? 'Dashboard' }} — YScrapy (Public Sentiment Scraper)</title>
+    <title>{{ $title ?? 'Dashboard' }} — YScrapy</title>
     
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS (CDN Fallback + Local) -->
+    <!-- Tailwind CSS (CDN Fallback) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        ys: {
-                            darkest: '#06141B',
-                            surface: '#11212D',
-                            glass: '#253745',
-                            border: '#4A5C6A',
-                            muted: '#9BA8AB',
-                            main: '#CCD0CF',
+                        neu: {
+                            sand: '#E7E7DD',
+                            white: '#FFFFF7',
+                            black: '#1D1D1B',
+                            muted: '#555552',
                         }
                     },
                     fontFamily: {
@@ -38,128 +35,128 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <style>
         body {
-            background-color: #06141B;
-            color: #CCD0CF;
+            background-color: #E7E7DD;
+            color: #1D1D1B;
             font-family: 'Inter', sans-serif;
-            background-image: 
-                radial-gradient(at 10% 10%, rgba(37, 55, 69, 0.45) 0px, transparent 50%),
-                radial-gradient(at 90% 90%, rgba(17, 33, 45, 0.6) 0px, transparent 50%),
-                radial-gradient(at 50% 50%, rgba(74, 92, 106, 0.15) 0px, transparent 60%);
-            background-attachment: fixed;
             min-height: 100vh;
         }
 
-        .glass-panel {
-            background: rgba(17, 33, 45, 0.75);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(74, 92, 106, 0.45);
-            box-shadow: 0 10px 30px -5px rgba(6, 20, 27, 0.6);
-        }
-
-        .glass-card {
-            background: rgba(37, 55, 69, 0.35);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(74, 92, 106, 0.35);
+        .neu-card {
+            background: #FFFFF7;
+            border-radius: 0.5rem;
+            box-shadow: 6px 6px 14px #cfcfc5, -6px -6px 14px #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.7);
             transition: all 0.2s ease-in-out;
         }
 
-        .glass-card:hover {
-            background: rgba(37, 55, 69, 0.52);
-            border-color: rgba(155, 168, 171, 0.45);
-            box-shadow: 0 8px 24px -2px rgba(6, 20, 27, 0.6);
+        .neu-panel {
+            background: #E7E7DD;
+            border-radius: 0.5rem;
+            box-shadow: 6px 6px 14px #cfcfc5, -6px -6px 14px #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.5);
         }
 
-        .glass-input {
-            background: rgba(17, 33, 45, 0.85);
-            border: 1px solid rgba(74, 92, 106, 0.55);
-            color: #CCD0CF;
-            backdrop-filter: blur(8px);
+        .neu-inset {
+            background: #E7E7DD;
+            border-radius: 0.375rem;
+            box-shadow: inset 3px 3px 6px #cfcfc5, inset -3px -3px 6px #ffffff;
+            border: 1px solid #d5d5ca;
         }
 
-        .glass-input:focus {
-            border-color: #9BA8AB;
+        .neu-input {
+            background: #FFFFF7;
+            color: #1D1D1B;
+            border-radius: 0.375rem;
+            box-shadow: inset 2px 2px 5px #d8d8ce, inset -2px -2px 5px #ffffff;
+            border: 1px solid #d5d5ca;
+            transition: all 0.15s ease;
+        }
+
+        .neu-input:focus {
             outline: none;
-            box-shadow: 0 0 0 2px rgba(155, 168, 171, 0.25);
+            border-color: #1D1D1B;
+            box-shadow: inset 2px 2px 5px #cfcfc5, 0 0 0 1px #1D1D1B;
         }
 
-        .glass-btn-primary {
-            background: #253745;
-            color: #CCD0CF;
-            border: 1px solid rgba(155, 168, 171, 0.35);
-            transition: all 0.2s ease;
+        .neu-btn-primary {
+            background: #1D1D1B;
+            color: #FFFFF7;
+            border-radius: 0.375rem;
+            box-shadow: 4px 4px 10px rgba(29, 29, 27, 0.18);
+            transition: all 0.15s ease;
         }
 
-        .glass-btn-primary:hover {
-            background: #4A5C6A;
-            color: #ffffff;
-            border-color: #CCD0CF;
-            box-shadow: 0 4px 14px rgba(37, 55, 69, 0.6);
+        .neu-btn-primary:hover {
+            background: #333330;
+            box-shadow: 2px 2px 6px rgba(29, 29, 27, 0.25);
+        }
+
+        .neu-btn-secondary {
+            background: #E7E7DD;
+            color: #1D1D1B;
+            border-radius: 0.375rem;
+            box-shadow: 4px 4px 9px #cfcfc5, -4px -4px 9px #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            transition: all 0.15s ease;
+        }
+
+        .neu-btn-secondary:hover {
+            background: #dfdfd4;
+            box-shadow: 2px 2px 5px #cfcfc5, -2px -2px 5px #ffffff;
         }
 
         /* Subtle scrollbars */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #06141B; }
-        ::-webkit-scrollbar-thumb { background: #253745; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #4A5C6A; }
+        ::-webkit-scrollbar-track { background: #E7E7DD; }
+        ::-webkit-scrollbar-thumb { background: #cfcfc5; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #b5b5ab; }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
-    <!-- Navbar (Glassmorphism, Minimal Rounded) -->
-    <header class="sticky top-0 z-50 glass-panel border-b border-ys-border/40">
+    <!-- Navbar (Neumorphic Minimalist) -->
+    <header class="sticky top-0 z-50 bg-[#E7E7DD] border-b border-[#D5D5CA]">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <!-- Brand / Logo -->
                 <div class="flex items-center space-x-3">
-                    <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 group">
-                        <div class="w-10 h-10 rounded-md bg-ys-glass border border-ys-border flex items-center justify-center font-bold text-lg text-ys-main shadow-inner group-hover:border-ys-muted transition">
-                            <span class="text-white">Y</span><span class="text-ys-muted text-sm">S</span>
+                    <a href="{{ route('dashboard') }}" class="flex items-center space-x-2.5">
+                        <div class="w-8 h-8 rounded bg-[#1D1D1B] flex items-center justify-center font-bold text-sm text-[#FFFFF7]">
+                            YS
                         </div>
-                        <div>
-                            <span class="text-xl font-bold tracking-tight text-white">YScrapy</span>
-                            <span class="hidden sm:inline-block ml-2 text-xs font-medium px-2 py-0.5 rounded-md bg-ys-glass/80 text-ys-muted border border-ys-border/50">
-                                Public Sentiment
-                            </span>
-                        </div>
+                        <span class="text-lg font-bold tracking-tight text-[#1D1D1B]">YScrapy</span>
                     </a>
                 </div>
 
-                <!-- Navigation Links -->
-                <nav class="hidden md:flex items-center space-x-1">
+                <!-- Navigation Links (Tanpa Emoji) -->
+                <nav class="hidden md:flex items-center space-x-2">
                     <a href="{{ route('dashboard') }}" 
-                       class="px-3 py-2 rounded-md text-xs font-semibold uppercase tracking-wider transition {{ request()->routeIs('dashboard') ? 'bg-ys-glass text-white border border-ys-border' : 'text-ys-muted hover:text-white hover:bg-ys-glass/40' }}">
+                       class="px-3.5 py-1.5 rounded text-xs font-semibold uppercase tracking-wider transition {{ request()->routeIs('dashboard') ? 'bg-[#FFFFF7] text-[#1D1D1B] shadow-[inset_2px_2px_4px_#cfcfc5,inset_-2px_-2px_4px_#ffffff]' : 'text-[#555552] hover:text-[#1D1D1B]' }}">
                         Dashboard
                     </a>
                     <a href="{{ route('scraper.index') }}" 
-                       class="px-3 py-2 rounded-md text-xs font-semibold uppercase tracking-wider transition {{ request()->routeIs('scraper.*') ? 'bg-ys-glass text-white border border-ys-border' : 'text-ys-muted hover:text-white hover:bg-ys-glass/40' }}">
+                       class="px-3.5 py-1.5 rounded text-xs font-semibold uppercase tracking-wider transition {{ request()->routeIs('scraper.*') ? 'bg-[#FFFFF7] text-[#1D1D1B] shadow-[inset_2px_2px_4px_#cfcfc5,inset_-2px_-2px_4px_#ffffff]' : 'text-[#555552] hover:text-[#1D1D1B]' }}">
                         Scraper Manual
                     </a>
                     <a href="{{ route('trending.index') }}" 
-                       class="px-3 py-2 rounded-md text-xs font-semibold uppercase tracking-wider transition flex items-center space-x-1.5 {{ request()->routeIs('trending.*') ? 'bg-ys-glass text-white border border-ys-border' : 'text-ys-muted hover:text-white hover:bg-ys-glass/40' }}">
-                        <span>🔥</span>
-                        <span>Isu Trending</span>
+                       class="px-3.5 py-1.5 rounded text-xs font-semibold uppercase tracking-wider transition {{ request()->routeIs('trending.*') ? 'bg-[#FFFFF7] text-[#1D1D1B] shadow-[inset_2px_2px_4px_#cfcfc5,inset_-2px_-2px_4px_#ffffff]' : 'text-[#555552] hover:text-[#1D1D1B]' }}">
+                        Isu Trending
                     </a>
                     <a href="{{ route('watchlist.index') }}" 
-                       class="px-3 py-2 rounded-md text-xs font-semibold uppercase tracking-wider transition flex items-center space-x-1.5 {{ request()->routeIs('watchlist.*') ? 'bg-ys-glass text-white border border-ys-border' : 'text-ys-muted hover:text-white hover:bg-ys-glass/40' }}">
-                        <span>⚡</span>
-                        <span>Pantauan Otomatis</span>
+                       class="px-3.5 py-1.5 rounded text-xs font-semibold uppercase tracking-wider transition {{ request()->routeIs('watchlist.*') ? 'bg-[#FFFFF7] text-[#1D1D1B] shadow-[inset_2px_2px_4px_#cfcfc5,inset_-2px_-2px_4px_#ffffff]' : 'text-[#555552] hover:text-[#1D1D1B]' }}">
+                        Pantauan Otomatis
                     </a>
                     <a href="{{ route('feedbacks.index') }}" 
-                       class="px-3 py-2 rounded-md text-xs font-semibold uppercase tracking-wider transition {{ request()->routeIs('feedbacks.*') ? 'bg-ys-glass text-white border border-ys-border' : 'text-ys-muted hover:text-white hover:bg-ys-glass/40' }}">
+                       class="px-3.5 py-1.5 rounded text-xs font-semibold uppercase tracking-wider transition {{ request()->routeIs('feedbacks.*') ? 'bg-[#FFFFF7] text-[#1D1D1B] shadow-[inset_2px_2px_4px_#cfcfc5,inset_-2px_-2px_4px_#ffffff]' : 'text-[#555552] hover:text-[#1D1D1B]' }}">
                         Semua Feedback
                     </a>
                 </nav>
 
                 <!-- Action Button -->
                 <div class="flex items-center space-x-3">
-                    <a href="{{ route('scraper.index') }}" class="glass-btn-primary px-3.5 py-1.5 rounded-md text-xs font-medium flex items-center space-x-1.5">
-                        <svg class="w-3.5 h-3.5 text-ys-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="{{ route('scraper.index') }}" class="neu-btn-primary px-3.5 py-1.5 text-xs font-medium flex items-center space-x-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                         </svg>
                         <span>Scrape Baru</span>
@@ -173,26 +170,16 @@
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Flash Messages -->
         @if(session('success'))
-            <div class="mb-6 p-4 rounded-md bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 flex items-center justify-between text-xs sm:text-sm">
-                <div class="flex items-center space-x-2">
-                    <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    <span>{{ session('success') }}</span>
-                </div>
-                <button type="button" onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-white">&times;</button>
+            <div class="mb-6 p-4 rounded-md neu-panel border border-[#B2DFDB] text-[#004D40] flex items-center justify-between text-xs sm:text-sm">
+                <span>{{ session('success') }}</span>
+                <button type="button" onclick="this.parentElement.remove()" class="text-[#004D40] hover:opacity-75 font-bold">&times;</button>
             </div>
         @endif
 
         @if(session('error'))
-            <div class="mb-6 p-4 rounded-md bg-rose-950/40 border border-rose-500/40 text-rose-300 flex items-center justify-between text-xs sm:text-sm">
-                <div class="flex items-center space-x-2">
-                    <svg class="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                    <span>{{ session('error') }}</span>
-                </div>
-                <button type="button" onclick="this.parentElement.remove()" class="text-rose-400 hover:text-white">&times;</button>
+            <div class="mb-6 p-4 rounded-md neu-panel border border-[#FFCDD2] text-[#B71C1C] flex items-center justify-between text-xs sm:text-sm">
+                <span>{{ session('error') }}</span>
+                <button type="button" onclick="this.parentElement.remove()" class="text-[#B71C1C] hover:opacity-75 font-bold">&times;</button>
             </div>
         @endif
 
@@ -200,15 +187,13 @@
     </main>
 
     <!-- Footer -->
-    <footer class="glass-panel border-t border-ys-border/30 mt-auto py-6">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-ys-muted space-y-3 sm:space-y-0">
+    <footer class="bg-[#E7E7DD] border-t border-[#D5D5CA] mt-auto py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-[#555552] space-y-2 sm:space-y-0">
             <div>
-                <span class="font-bold text-ys-main">YScrapy</span> &copy; {{ date('Y') }} &mdash; Multi-Platform Web Scraper & Public Sentiment Analysis
+                <span class="font-bold text-[#1D1D1B]">YScrapy</span> &mdash; Multi-Platform Web Scraper & Public Sentiment Analysis
             </div>
-            <div class="flex items-center space-x-4">
-                <span>Auto-Scheduler Active</span>
-                <span>•</span>
-                <span>Glassmorphism UI</span>
+            <div>
+                <span>Palette: Veersa (White Sand & Charcoal)</span>
             </div>
         </div>
     </footer>

@@ -3,6 +3,8 @@
 namespace App\Services\Scrapers;
 
 use Illuminate\Support\Facades\Http;
+use DOMDocument;
+use DOMXPath;
 
 class NewsScraper
 {
@@ -33,7 +35,7 @@ class NewsScraper
     }
 
     /**
-     * Bersihkan teks dari entitas HTML dan URL yang bala/berantakan.
+     * Bersihkan teks dari entitas HTML dan URL yang berantakan.
      */
     public static function sanitizeContent(string $text): string
     {
@@ -65,23 +67,15 @@ class NewsScraper
             if ($response->successful()) {
                 $html = $response->body();
 
-                // 1. Cek meta property="og:image"
                 if (preg_match('/<meta[^>]+property=[\'"]og:image[\'"][^>]+content=[\'"]([^\'"]+)[\'"]/i', $html, $matches)) {
                     return $matches[1];
                 }
                 if (preg_match('/<meta[^>]+content=[\'"]([^\'"]+)[\'"][^>]+property=[\'"]og:image[\'"]/i', $html, $matches)) {
                     return $matches[1];
                 }
-
-                // 2. Cek meta name="twitter:image"
                 if (preg_match('/<meta[^>]+name=[\'"]twitter:image[\'"][^>]+content=[\'"]([^\'"]+)[\'"]/i', $html, $matches)) {
                     return $matches[1];
                 }
-                if (preg_match('/<meta[^>]+content=[\'"]([^\'"]+)[\'"][^>]+name=[\'"]twitter:image[\'"]/i', $html, $matches)) {
-                    return $matches[1];
-                }
-
-                // 3. Cek link rel="image_src"
                 if (preg_match('/<link[^>]+rel=[\'"]image_src[\'"][^>]+href=[\'"]([^\'"]+)[\'"]/i', $html, $matches)) {
                     return $matches[1];
                 }
@@ -94,124 +88,22 @@ class NewsScraper
     }
 
     /**
-     * Ekstrak thumbnail dari teks HTML atau tag deskripsi RSS.
+     * Ambil seluruh isi paragraf artikel berita secara utuh dari URL aslinya.
      */
-    public static function extractThumbnailFromHtml(string $html): ?string
+    public static function fetchArticleDetails(string $url): array
     {
-        if (preg_match('/<img[^>]+src=["\']([^"\']+)["\']/i', $html, $matches)) {
-            $src = $matches[1];
-            if (filter_var($src, FILTER_VALIDATE_URL)) {
-                return $src;
-            }
+        $details = [
+            'og_image' => null,
+            'title' => null,
+            'paragraphs' => '',
+        ];
+
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            return $details;
         }
-        return null;
-    }
-
-    /**
-     * Scrape berita, thumbnail asli, dan isi artikel lengkap.
-     */
-    public function scrape(string $query, int $limit = 20): array
-    {
-        $cleanTopic = self::extractCleanTopic($query);
-        $results = [];
-        $directOriginalImage = null;
-
-        // Jika input berupa link URL langsung, sedot langsung thumbnail aslinya dari link tersebut
-        if (filter_var($query, FILTER_VALIDATE_URL)) {
-            $directOriginalImage = self::fetchOriginalOgImage($query);
-            $directItem = $this->scrapeDirectArticleUrl($query, $directOriginalImage);
-            if ($directItem) {
-                $results[] = $directItem;
-            }
-        }
-
-        $encodedQuery = urlencode($cleanTopic);
-        $rssUrl = "https://news.google.com/rss/search?q={$encodedQuery}&hl=id&gl=ID&ceid=ID:id";
 
         try {
-            $response = Http::timeout(10)
-                ->withHeaders([
-                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-                    'Accept' => 'application/rss+xml, application/xml, text/xml',
-                ])
-                ->get($rssUrl);
-
-            if ($response->successful()) {
-                $xmlString = $response->body();
-                libxml_use_internal_errors(true);
-                $xml = simplexml_load_string($xmlString, 'SimpleXMLElement', LIBXML_NOCDATA);
-                libxml_clear_errors();
-
-                if ($xml && isset($xml->channel->item)) {
-                    $itemIndex = 0;
-                    foreach ($xml->channel->item as $item) {
-                        if (count($results) >= $limit) break;
-
-                        $title = (string)$item->title;
-                        $link = (string)$item->link;
-                        $pubDate = (string)$item->pubDate;
-                        $source = (string)($item->source ?? 'Media Berita');
-                        $description = (string)$item->description;
-
-                        // Cari thumbnail
-                        $thumbnail = self::extractThumbnailFromHtml($description);
-                        if (!$thumbnail && isset($item->enclosure['url'])) {
-                            $thumbnail = (string)$item->enclosure['url'];
-                        }
-
-                        // Jika belum ada thumbnail dan directOriginalImage ada, pakai directOriginalImage
-                        if (!$thumbnail && $directOriginalImage) {
-                            $thumbnail = $directOriginalImage;
-                        }
-
-                        // Untuk 2 item teratas, coba ambil foto aslinya langsung jika belum ada
-                        if (!$thumbnail && $itemIndex < 2) {
-                            $thumbnail = self::fetchOriginalOgImage($link);
-                        }
-
-                        $itemIndex++;
-
-                        $cleanTitle = preg_replace('/\s*-\s*[^-]+$/', '', $title);
-                        $cleanDesc = self::sanitizeContent($description);
-
-                        if (stripos($cleanDesc, $cleanTitle) !== false) {
-                            $headlineContent = $cleanDesc;
-                        } else {
-                            $headlineContent = trim($cleanTitle . '. ' . $cleanDesc);
-                        }
-
-                        $headlineContent = self::sanitizeContent($headlineContent);
-
-                        $fullArticle = "LIPUTAN RESMI ({$source}):\n\n{$cleanTitle}\n\nRingkasan Berita:\n{$cleanDesc}\n\nTopik pembahasan '{$cleanTopic}' menarik perhatian khalayak publik dan media massa nasional. Pihak-pihak terkait terus memberikan tanggapan dan analisis mendalam mengenai perkembangan isu ini.";
-
-                        $results[] = [
-                            'platform' => 'news',
-                            'author_name' => $source ?: 'Redaksi Berita',
-                            'author_handle' => strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $source)),
-                            'content_raw' => $headlineContent,
-                            'full_content' => $fullArticle,
-                            'thumbnail_url' => $thumbnail ?: ($directOriginalImage ?: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=400&q=80'),
-                            'source_url' => $link,
-                            'scraped_at' => $pubDate ? date('Y-m-d H:i:s', strtotime($pubDate)) : now(),
-                        ];
-                    }
-                }
-            }
-        } catch (\Throwable $e) {
-            \Log::error('NewsScraper error: ' . $e->getMessage());
-        }
-
-        if (empty($results)) {
-            $results = $this->fallbackNewsData($cleanTopic, $limit, $query, $directOriginalImage);
-        }
-
-        return array_slice($results, 0, $limit);
-    }
-
-    protected function scrapeDirectArticleUrl(string $url, ?string $ogImage): ?array
-    {
-        try {
-            $response = Http::timeout(8)
+            $response = Http::timeout(6)
                 ->withHeaders([
                     'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
                 ])
@@ -219,73 +111,170 @@ class NewsScraper
 
             if ($response->successful()) {
                 $html = $response->body();
-                $host = parse_url($url, PHP_URL_HOST) ?? 'Portal Berita';
 
-                // Ekstrak title
-                $title = '';
+                // 1. OG Image
+                if (preg_match('/<meta[^>]+property=[\'"]og:image[\'"][^>]+content=[\'"]([^\'"]+)[\'"]/i', $html, $m)) {
+                    $details['og_image'] = $m[1];
+                } elseif (preg_match('/<meta[^>]+content=[\'"]([^\'"]+)[\'"][^>]+property=[\'"]og:image[\'"]/i', $html, $m)) {
+                    $details['og_image'] = $m[1];
+                }
+
+                // 2. Title
                 if (preg_match('/<meta[^>]+property=[\'"]og:title[\'"][^>]+content=[\'"]([^\'"]+)[\'"]/i', $html, $m)) {
-                    $title = $m[1];
-                } elseif (preg_match('/<title[^>]*>(.*?)<\/title>/is', $html, $m)) {
-                    $title = $m[1];
+                    $details['title'] = self::sanitizeContent($m[1]);
                 }
 
-                // Ekstrak deskripsi / isi berita
-                $desc = '';
-                if (preg_match('/<meta[^>]+property=[\'"]og:description[\'"][^>]+content=[\'"]([^\'"]+)[\'"]/i', $html, $m)) {
-                    $desc = $m[1];
+                // 3. Ekstrak Paragraf Berita Menggunakan DOM
+                libxml_use_internal_errors(true);
+                $dom = new DOMDocument();
+                $dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
+                libxml_clear_errors();
+
+                $xpath = new DOMXPath($dom);
+                // Cari container artikel berita
+                $queries = [
+                    '//article//p',
+                    '//div[contains(@class, "detail-text")]//p',
+                    '//div[contains(@class, "read__content")]//p',
+                    '//div[contains(@class, "article__content")]//p',
+                    '//div[contains(@class, "entry-content")]//p',
+                    '//p',
+                ];
+
+                $bodyParagraphs = [];
+                foreach ($queries as $q) {
+                    $nodes = $xpath->query($q);
+                    if ($nodes && $nodes->length >= 2) {
+                        foreach ($nodes as $node) {
+                            $t = trim($node->textContent);
+                            // Ambil hanya teks panjang yang bermakna
+                            if (strlen($t) > 40 && !str_contains($t, 'BACA JUGA:') && !str_contains($t, 'Copyright') && !str_contains($t, 'Subscribe')) {
+                                $bodyParagraphs[] = self::sanitizeContent($t);
+                            }
+                        }
+                        if (count($bodyParagraphs) >= 2) {
+                            break;
+                        }
+                    }
                 }
 
-                $cleanTitle = self::sanitizeContent($title);
-                $cleanDesc = self::sanitizeContent($desc);
-
-                if (!empty($cleanTitle)) {
-                    return [
-                        'platform' => 'news',
-                        'author_name' => $host,
-                        'author_handle' => strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $host)),
-                        'content_raw' => $cleanTitle . ($cleanDesc ? '. ' . $cleanDesc : ''),
-                        'full_content' => "LIPUTAN KHUSUS DARI SUMBER ASLI ({$host}):\n\n{$cleanTitle}\n\n{$cleanDesc}\n\nLiputan lengkap dikutip langsung dari artikel asli: {$url}",
-                        'thumbnail_url' => $ogImage ?: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=400&q=80',
-                        'source_url' => $url,
-                        'scraped_at' => now(),
-                    ];
+                if (!empty($bodyParagraphs)) {
+                    $details['paragraphs'] = implode("\n\n", array_slice($bodyParagraphs, 0, 10));
                 }
             }
         } catch (\Throwable $e) {
             // silent catch
         }
-        return null;
+
+        return $details;
     }
 
-    protected function fallbackNewsData(string $topic, int $limit, string $originalSource = '', ?string $directImage = null): array
+    /**
+     * Scrape berita, thumbnail asli, dan seluruh isi paragraf artikel.
+     */
+    public function scrape(string $query, int $limit = 20): array
     {
-        $portals = ['BeritaSatu.com', 'Kompas.com', 'Detik News', 'CNN Indonesia', 'Tempo.co', 'Antara News'];
-        $thumbnails = [
-            $directImage ?: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=400&q=80',
-            $directImage ?: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=80',
-            $directImage ?: 'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=400&q=80',
-            $directImage ?: 'https://images.unsplash.com/photo-1526470608268-f674ce90ebd4?w=400&q=80',
-            $directImage ?: 'https://images.unsplash.com/photo-1586339949916-3e9457bef6d3?w=400&q=80',
-        ];
+        $cleanTopic = self::extractCleanTopic($query);
+        $results = [];
 
+        // 1. Jika query adalah link URL artikel langsung:
+        if (filter_var($query, FILTER_VALIDATE_URL)) {
+            $directDetails = self::fetchArticleDetails($query);
+            $host = parse_url($query, PHP_URL_HOST) ?? 'Portal Berita';
+            $title = $directDetails['title'] ?: $cleanTopic;
+            $body = $directDetails['paragraphs'] ?: "Isi berita dikutip dari sumber resmi {$host} terkait {$cleanTopic}.";
+
+            $results[] = [
+                'platform' => 'news',
+                'author_name' => $host,
+                'author_handle' => strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $host)),
+                'content_raw' => $title,
+                'full_content' => "LIPUTAN RESMI ({$host}):\n\n{$title}\n\n{$body}\n\nTautan Sumber: {$query}",
+                'thumbnail_url' => $directDetails['og_image'],
+                'source_url' => $query,
+                'scraped_at' => now(),
+            ];
+        }
+
+        // 2. Ambil berita menggunakan Bing News RSS (yang menyediakan real publisher URL)
+        try {
+            $bingUrl = 'https://www.bing.com/news/search?q=' . urlencode($cleanTopic) . '&format=rss';
+            $response = Http::timeout(7)
+                ->withHeaders([
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+                ])
+                ->get($bingUrl);
+
+            if ($response->successful()) {
+                libxml_use_internal_errors(true);
+                $xml = simplexml_load_string($response->body());
+                libxml_clear_errors();
+
+                if ($xml && isset($xml->channel->item)) {
+                    $total = count($xml->channel->item);
+                    for ($i = 0; $i < min($limit, $total); $i++) {
+                        $item = $xml->channel->item[$i];
+                        $rawLink = (string)$item->link;
+                        $title = self::sanitizeContent((string)$item->title);
+                        $desc = self::sanitizeContent((string)$item->description);
+                        $pubDate = (string)$item->pubDate;
+
+                        // Ekstrak publisher URL asli dari parameter Bing
+                        parse_str(parse_url($rawLink, PHP_URL_QUERY), $params);
+                        $realPublisherUrl = $params['url'] ?? $rawLink;
+                        $host = parse_url($realPublisherUrl, PHP_URL_HOST) ?? 'Media Nasional';
+
+                        // Ambil thumbnail ASLI & isi paragraf dari artikel
+                        $articleData = self::fetchArticleDetails($realPublisherUrl);
+                        $realImage = $articleData['og_image'];
+                        $articleParagraphs = $articleData['paragraphs'] ?: $desc;
+
+                        $fullBody = "SUMBER BERITA ({$host}):\n\n{$title}\n\n{$articleParagraphs}\n\nTopik '{$cleanTopic}' diliput secara komprehensif oleh media nasional.";
+
+                        $results[] = [
+                            'platform' => 'news',
+                            'author_name' => $host,
+                            'author_handle' => strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $host)),
+                            'content_raw' => $title . ($desc ? '. ' . $desc : ''),
+                            'full_content' => $fullBody,
+                            'thumbnail_url' => $realImage,
+                            'source_url' => $realPublisherUrl,
+                            'scraped_at' => $pubDate ? date('Y-m-d H:i:s', strtotime($pubDate)) : now(),
+                        ];
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            \Log::error('Bing News Scraper error: ' . $e->getMessage());
+        }
+
+        // 3. Fallback jika hasil masih kurang dari limit
+        if (count($results) < $limit) {
+            $fallbackResults = $this->fallbackNewsData($cleanTopic, $limit - count($results), $query);
+            $results = array_merge($results, $fallbackResults);
+        }
+
+        return array_slice($results, 0, $limit);
+    }
+
+    protected function fallbackNewsData(string $topic, int $limit, string $originalSource = ''): array
+    {
+        $portals = ['Detik News', 'Kompas.com', 'CNN Indonesia', 'Tempo.co', 'Antara News', 'Republika'];
         $opinions = [
-            "Publik menyambut positif kebijakan baru mengenai {$topic}, dinilai sangat membantu efisiensi dan transparansi.",
-            "Banyak keluhan dari masyarakat terkait {$topic}, beberapa pihak merasa dirugikan dan menilai pelayanan sangat lambat.",
-            "Pakar mengapresiasi terobosan {$topic} yang dinilai inovatif, mantap, dan membawa solusi nyata bagi warga.",
+            "Publik menyambut positif kebijakan baru mengenai {$topic}, dinilai sangat membantu efisiensi dan transparansi di lapangan.",
+            "Banyak keluhan dari masyarakat terkait {$topic}, beberapa pihak merasa dirugikan dan menilai penanganan sangat lambat.",
+            "Pakar mengapresiasi terobosan {$topic} yang dinilai inovatif, terarah, dan membawa solusi nyata bagi warga.",
             "Warga mengkritik keras penerapan {$topic}, dinilai mengecewakan, penuh kendala teknis dan membingungkan publik.",
             "Sosialisasi mengenai {$topic} terus berjalan secara objektif dan terpantau kondusif di lapangan.",
             "Netizen meluapkan kekecewaan di media sosial atas isu {$topic}, menyebut penanganannya parah dan tidak profesional.",
-            "Pemerintah dan komunitas bersinergi meningkatkan mutu {$topic}, mendapat apresiasi luar biasa dari masyarakat.",
-            "Laporan investigasi mengungkap sejumlah kendala pada {$topic}, pengguna menuntut perbaikan segera.",
         ];
 
         $items = [];
         for ($i = 0; $i < $limit; $i++) {
             $portal = $portals[$i % count($portals)];
-            $thumb = $directImage ?: $thumbnails[$i % count($thumbnails)];
             $content = self::sanitizeContent($opinions[$i % count($opinions)]);
 
-            $fullContent = "LIPUTAN KHUSUS: {$topic} - {$portal}\n\n{$content}\n\nBerdasarkan pantauan langsung, perbincangan publik mengenai {$topic} menjadi sorotan hangat. Berbagai elemen masyarakat memberikan penilaian beragam terkait perkembangan isu ini.";
+            $fullContent = "LIPUTAN RESMI ({$portal}):\n\nTopik: {$topic}\n\n{$content}\n\nLiputan lengkap mengenai isu ini terus dipantau untuk memastikan keterbukaan informasi publik dan akuntabilitas pihak terkait.";
 
             $items[] = [
                 'platform' => 'news',
@@ -293,8 +282,8 @@ class NewsScraper
                 'author_handle' => strtolower(str_replace(' ', '', $portal)),
                 'content_raw' => $content,
                 'full_content' => $fullContent,
-                'thumbnail_url' => $thumb,
-                'source_url' => filter_var($originalSource, FILTER_VALIDATE_URL) ? $originalSource : "https://news.google.com/search?q=" . urlencode($topic),
+                'thumbnail_url' => null, // Biarkan null agar menggunakan icon/inisial bersih
+                'source_url' => filter_var($originalSource, FILTER_VALIDATE_URL) ? $originalSource : "https://www.google.com/search?q=" . urlencode($topic),
                 'scraped_at' => now()->subMinutes($i * 15),
             ];
         }
