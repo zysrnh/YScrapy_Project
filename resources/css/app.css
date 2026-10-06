@@ -14,7 +14,7 @@
 }
 
 @theme {
-    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
     --color-neu-sand: #E7E7DD;
     --color-neu-white: #FFFFF7;
     --color-neu-black: #1D1D1B;
@@ -24,26 +24,36 @@
 body {
     background-color: #E7E7DD;
     color: #1D1D1B;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    letter-spacing: -0.01em;
 }
 
-/* True Neumorphism (Soft UI) Styles - Based on Neu Reference */
+/* Neumorphism (Soft UI) Styles */
 .neu-card {
     background: #E7E7DD;
     border-radius: 1.25rem;
     box-shadow: 9px 9px 20px #c5c5ba, -9px -9px 20px #ffffff;
     border: none;
-    transition: all 0.25s ease-in-out;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .neu-card:hover {
-    box-shadow: 12px 12px 24px #bebeb3, -12px -12px 24px #ffffff;
+    transform: translateY(-3px);
+    box-shadow: 12px 12px 26px #bebeb3, -12px -12px 26px #ffffff;
 }
 
 .neu-panel {
     background: #E7E7DD;
     border-radius: 1.25rem;
     box-shadow: 8px 8px 18px #c5c5ba, -8px -8px 18px #ffffff;
+    border: none;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Sidebar Neumorphic */
+.neu-sidebar {
+    background: #E7E7DD;
+    box-shadow: 6px 0 20px #c5c5ba;
     border: none;
 }
 
@@ -53,10 +63,11 @@ body {
     border-radius: 1rem;
     box-shadow: 5px 5px 12px #c5c5ba, -5px -5px 12px #ffffff;
     border: none;
-    transition: all 0.2s ease;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .neu-subcard:hover {
+    transform: translateY(-2px);
     box-shadow: 7px 7px 16px #bebeb3, -7px -7px 16px #ffffff;
 }
 
@@ -80,7 +91,7 @@ body {
 
 .neu-input:focus {
     outline: none;
-    box-shadow: inset 5px 5px 10px #bebeb3, inset -5px -5px 10px #ffffff, 0 0 0 1px rgba(29, 29, 27, 0.15);
+    box-shadow: inset 5px 5px 10px #bebeb3, inset -5px -5px 10px #ffffff, 0 0 0 1px rgba(29, 29, 27, 0.2);
 }
 
 /* Tombol Hitam Tegas (Charcoal) */
@@ -90,12 +101,18 @@ body {
     border-radius: 0.875rem;
     box-shadow: 5px 5px 14px rgba(29, 29, 27, 0.3), -3px -3px 8px #ffffff;
     border: none;
-    transition: all 0.2s ease;
+    transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .neu-btn-primary:hover {
     background: #2b2b28;
-    box-shadow: 3px 3px 8px rgba(29, 29, 27, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 6px 6px 16px rgba(29, 29, 27, 0.38);
+}
+
+.neu-btn-primary:active {
+    transform: translateY(1px);
+    box-shadow: 2px 2px 6px rgba(29, 29, 27, 0.4);
 }
 
 /* Tombol Sekunder Timbul Lembut */
@@ -105,16 +122,82 @@ body {
     border-radius: 0.875rem;
     box-shadow: 5px 5px 12px #c5c5ba, -5px -5px 12px #ffffff;
     border: none;
-    transition: all 0.2s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .neu-btn-secondary:hover {
-    box-shadow: 3px 3px 8px #c5c5ba, -3px -3px 8px #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 7px 7px 15px #bebeb3, -7px -7px 15px #ffffff;
 }
 
 .neu-btn-secondary:active,
 .neu-btn-active {
+    transform: translateY(1px);
     box-shadow: inset 3px 3px 6px #c5c5ba, inset -3px -3px 6px #ffffff;
+}
+
+/* Nav Item Sidebar */
+.neu-nav-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: 0.875rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.neu-nav-item.active {
+    box-shadow: inset 4px 4px 8px #c5c5ba, inset -4px -4px 8px #ffffff;
+    color: #1D1D1B;
+}
+
+.neu-nav-item:not(.active) {
+    color: #555552;
+}
+
+.neu-nav-item:not(.active):hover {
+    color: #1D1D1B;
+    transform: translateX(3px);
+    box-shadow: 4px 4px 10px #c5c5ba, -4px -4px 10px #ffffff;
+}
+
+/* Attractive Keyframe Animations */
+@keyframes neuFadeUp {
+    0% {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes neuPulseLive {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.4;
+        transform: scale(1.18);
+    }
+}
+
+.neu-entrance {
+    animation: neuFadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.neu-delay-1 { animation-delay: 0.05s; }
+.neu-delay-2 { animation-delay: 0.10s; }
+.neu-delay-3 { animation-delay: 0.15s; }
+.neu-delay-4 { animation-delay: 0.20s; }
+.neu-delay-5 { animation-delay: 0.25s; }
+.neu-delay-6 { animation-delay: 0.30s; }
+
+.neu-pulse-dot {
+    animation: neuPulseLive 2s infinite ease-in-out;
 }
 
 /* Custom Scrollbar */
