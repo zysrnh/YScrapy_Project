@@ -11,7 +11,7 @@ use Illuminate\Console\Command;
 class CleanFeedbacksCommand extends Command
 {
     protected $signature = 'yscrapy:clean-feedbacks';
-    protected $description = 'Bersihkan teks konten feedback, isi thumbnail, dan full content di database';
+    protected $description = 'Bersihkan teks konten feedback, isi thumbnail asli, dan full content di database';
 
     public function handle(IndonesianSentimentAnalyzer $analyzer)
     {
@@ -27,12 +27,11 @@ class CleanFeedbacksCommand extends Command
             }
         }
 
-        $this->info('Membersihkan feedbacks dan mengisi thumbnail...');
+        $this->info('Membersihkan feedbacks...');
         $feedbacks = ScrapedFeedback::all();
         foreach ($feedbacks as $f) {
             $raw = $f->content_raw;
             $clean = NewsScraper::sanitizeContent($raw);
-
             $res = $analyzer->analyze($clean);
 
             $thumb = $f->thumbnail_url ?: $f->display_thumbnail;
@@ -49,7 +48,7 @@ class CleanFeedbacksCommand extends Command
             ]);
         }
 
-        $this->info('Selesai! Seluruh data feedback telah diperbarui dengan thumbnail dan isi lengkap.');
+        $this->info('Selesai! Seluruh data feedback telah diperbarui.');
         return 0;
     }
 }

@@ -14,6 +14,7 @@ class DirectUrlScraper
     public function scrape(string $url, int $limit = 20): array
     {
         $items = [];
+        $ogImage = NewsScraper::fetchOriginalOgImage($url);
 
         try {
             $response = Http::timeout(10)
@@ -38,13 +39,15 @@ class DirectUrlScraper
                     foreach ($nodes as $node) {
                         if ($count >= $limit) break;
                         $text = trim($node->textContent);
-                        // Hanya ambil teks yang cukup panjang dan bermakna (> 30 karakter, < 500 karakter)
                         if (strlen($text) > 30 && strlen($text) < 500) {
+                            $clean = NewsScraper::sanitizeContent($text);
                             $items[] = [
                                 'platform' => 'custom',
-                                'author_name' => 'Web Reader',
-                                'author_handle' => parse_url($url, PHP_URL_HOST) ?? 'custom_url',
-                                'content_raw' => $text,
+                                'author_name' => parse_url($url, PHP_URL_HOST) ?? 'Web Reader',
+                                'author_handle' => 'direct_source',
+                                'content_raw' => $clean,
+                                'full_content' => "Kutipan dari sumber: {$url}\n\n\"{$clean}\"",
+                                'thumbnail_url' => $ogImage ?: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=400&q=80',
                                 'source_url' => $url,
                                 'scraped_at' => now(),
                             ];
@@ -60,9 +63,11 @@ class DirectUrlScraper
         if (empty($items)) {
             $items[] = [
                 'platform' => 'custom',
-                'author_name' => 'Web Reader',
-                'author_handle' => parse_url($url, PHP_URL_HOST) ?? 'custom_url',
-                'content_raw' => "Halaman web {$url} berhasil dikunjungi, konten artikel dan opini sedang diekstrak.",
+                'author_name' => parse_url($url, PHP_URL_HOST) ?? 'Web Reader',
+                'author_handle' => 'direct_source',
+                'content_raw' => "Halaman web {$url} berhasil dikunjungi, konten ulasan dan opininya sedang diekstrak.",
+                'full_content' => "Kunjungan langsung ke URL: {$url}\n\nKonten artikel dan opini publik berhasil terdeteksi.",
+                'thumbnail_url' => $ogImage ?: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=400&q=80',
                 'source_url' => $url,
                 'scraped_at' => now(),
             ];

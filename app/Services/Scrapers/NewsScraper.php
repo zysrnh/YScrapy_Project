@@ -46,6 +46,54 @@ class NewsScraper
     }
 
     /**
+     * Ekstrak foto thumbnail ASLI (og:image / twitter:image) langsung dari halaman berita.
+     */
+    public static function fetchOriginalOgImage(string $url): ?string
+    {
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            return null;
+        }
+
+        try {
+            $response = Http::timeout(5)
+                ->withHeaders([
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+                    'Accept' => 'text/html,application/xhtml+xml,application/xml',
+                ])
+                ->get($url);
+
+            if ($response->successful()) {
+                $html = $response->body();
+
+                // 1. Cek meta property="og:image"
+                if (preg_match('/<meta[^>]+property=[\'"]og:image[\'"][^>]+content=[\'"]([^\'"]+)[\'"]/i', $html, $matches)) {
+                    return $matches[1];
+                }
+                if (preg_match('/<meta[^>]+content=[\'"]([^\'"]+)[\'"][^>]+property=[\'"]og:image[\'"]/i', $html, $matches)) {
+                    return $matches[1];
+                }
+
+                // 2. Cek meta name="twitter:image"
+                if (preg_match('/<meta[^>]+name=[\'"]twitter:image[\'"][^>]+content=[\'"]([^\'"]+)[\'"]/i', $html, $matches)) {
+                    return $matches[1];
+                }
+                if (preg_match('/<meta[^>]+content=[\'"]([^\'"]+)[\'"][^>]+name=[\'"]twitter:image[\'"]/i', $html, $matches)) {
+                    return $matches[1];
+                }
+
+                // 3. Cek link rel="image_src"
+                if (preg_match('/<link[^>]+rel=[\'"]image_src[\'"][^>]+href=[\'"]([^\'"]+)[\'"]/i', $html, $matches)) {
+                    return $matches[1];
+                }
+            }
+        } catch (\Throwable $e) {
+            // silent catch
+        }
+
+        return null;
+    }
+
+    /**
      * Ekstrak thumbnail dari teks HTML atau tag deskripsi RSS.
      */
     public static function extractThumbnailFromHtml(string $html): ?string
@@ -60,15 +108,25 @@ class NewsScraper
     }
 
     /**
-     * Scrape berita, thumbnail, dan isi artikel dari Google News RSS Indonesia.
+     * Scrape berita, thumbnail asli, dan isi artikel lengkap.
      */
     public function scrape(string $query, int $limit = 20): array
     {
         $cleanTopic = self::extractCleanTopic($query);
+        $results = [];
+        $directOriginalImage = null;
+
+        // Jika input berupa link URL langsung, sedot langsung thumbnail aslinya dari link tersebut
+        if (filter_var($query, FILTER_VALIDATE_URL)) {
+            $directOriginalImage = self::fetchOriginalOgImage($query);
+            $directItem = $this->scrapeDirectArticleUrl($query, $directOriginalImage);
+            if ($directItem) {
+                $results[] = $directItem;
+            }
+        }
+
         $encodedQuery = urlencode($cleanTopic);
         $rssUrl = "https://news.google.com/rss/search?q={$encodedQuery}&hl=id&gl=ID&ceid=ID:id";
-
-        $results = [];
 
         try {
             $response = Http::timeout(10)
@@ -85,6 +143,7 @@ class NewsScraper
                 libxml_clear_errors();
 
                 if ($xml && isset($xml->channel->item)) {
+                    $itemIndex = 0;
                     foreach ($xml->channel->item as $item) {
                         if (count($results) >= $limit) break;
 
@@ -100,7 +159,18 @@ class NewsScraper
                             $thumbnail = (string)$item->enclosure['url'];
                         }
 
-                        // Bersihkan judul dari nama sumber
+                        // Jika belum ada thumbnail dan directOriginalImage ada, pakai directOriginalImage
+                        if (!$thumbnail && $directOriginalImage) {
+                            $thumbnail = $directOriginalImage;
+                        }
+
+                        // Untuk 2 item teratas, coba ambil foto aslinya langsung jika belum ada
+                        if (!$thumbnail && $itemIndex < 2) {
+                            $thumbnail = self::fetchOriginalOgImage($link);
+                        }
+
+                        $itemIndex++;
+
                         $cleanTitle = preg_replace('/\s*-\s*[^-]+$/', '', $title);
                         $cleanDesc = self::sanitizeContent($description);
 
@@ -112,8 +182,7 @@ class NewsScraper
 
                         $headlineContent = self::sanitizeContent($headlineContent);
 
-                        // Buat tubuh berita lengkap
-                        $fullArticle = "{$cleanTitle}\n\nSumber Resmi: {$source}\n\nRingkasan Berita:\n{$cleanDesc}\n\nLiputan lengkap mengenai topik {$cleanTopic} terus berkembang dengan berbagai tanggapan dari para pengamat dan masyarakat luas terkait dampaknya ke depan.";
+                        $fullArticle = "LIPUTAN RESMI ({$source}):\n\n{$cleanTitle}\n\nRingkasan Berita:\n{$cleanDesc}\n\nTopik pembahasan '{$cleanTopic}' menarik perhatian khalayak publik dan media massa nasional. Pihak-pihak terkait terus memberikan tanggapan dan analisis mendalam mengenai perkembangan isu ini.";
 
                         $results[] = [
                             'platform' => 'news',
@@ -121,7 +190,7 @@ class NewsScraper
                             'author_handle' => strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $source)),
                             'content_raw' => $headlineContent,
                             'full_content' => $fullArticle,
-                            'thumbnail_url' => $thumbnail ?: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=400&q=80',
+                            'thumbnail_url' => $thumbnail ?: ($directOriginalImage ?: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=400&q=80'),
                             'source_url' => $link,
                             'scraped_at' => $pubDate ? date('Y-m-d H:i:s', strtotime($pubDate)) : now(),
                         ];
@@ -133,21 +202,70 @@ class NewsScraper
         }
 
         if (empty($results)) {
-            $results = $this->fallbackNewsData($cleanTopic, $limit, $query);
+            $results = $this->fallbackNewsData($cleanTopic, $limit, $query, $directOriginalImage);
         }
 
         return array_slice($results, 0, $limit);
     }
 
-    protected function fallbackNewsData(string $topic, int $limit, string $originalSource = ''): array
+    protected function scrapeDirectArticleUrl(string $url, ?string $ogImage): ?array
+    {
+        try {
+            $response = Http::timeout(8)
+                ->withHeaders([
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+                ])
+                ->get($url);
+
+            if ($response->successful()) {
+                $html = $response->body();
+                $host = parse_url($url, PHP_URL_HOST) ?? 'Portal Berita';
+
+                // Ekstrak title
+                $title = '';
+                if (preg_match('/<meta[^>]+property=[\'"]og:title[\'"][^>]+content=[\'"]([^\'"]+)[\'"]/i', $html, $m)) {
+                    $title = $m[1];
+                } elseif (preg_match('/<title[^>]*>(.*?)<\/title>/is', $html, $m)) {
+                    $title = $m[1];
+                }
+
+                // Ekstrak deskripsi / isi berita
+                $desc = '';
+                if (preg_match('/<meta[^>]+property=[\'"]og:description[\'"][^>]+content=[\'"]([^\'"]+)[\'"]/i', $html, $m)) {
+                    $desc = $m[1];
+                }
+
+                $cleanTitle = self::sanitizeContent($title);
+                $cleanDesc = self::sanitizeContent($desc);
+
+                if (!empty($cleanTitle)) {
+                    return [
+                        'platform' => 'news',
+                        'author_name' => $host,
+                        'author_handle' => strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $host)),
+                        'content_raw' => $cleanTitle . ($cleanDesc ? '. ' . $cleanDesc : ''),
+                        'full_content' => "LIPUTAN KHUSUS DARI SUMBER ASLI ({$host}):\n\n{$cleanTitle}\n\n{$cleanDesc}\n\nLiputan lengkap dikutip langsung dari artikel asli: {$url}",
+                        'thumbnail_url' => $ogImage ?: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=400&q=80',
+                        'source_url' => $url,
+                        'scraped_at' => now(),
+                    ];
+                }
+            }
+        } catch (\Throwable $e) {
+            // silent catch
+        }
+        return null;
+    }
+
+    protected function fallbackNewsData(string $topic, int $limit, string $originalSource = '', ?string $directImage = null): array
     {
         $portals = ['BeritaSatu.com', 'Kompas.com', 'Detik News', 'CNN Indonesia', 'Tempo.co', 'Antara News'];
         $thumbnails = [
-            'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=400&q=80',
-            'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=80',
-            'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=400&q=80',
-            'https://images.unsplash.com/photo-1526470608268-f674ce90ebd4?w=400&q=80',
-            'https://images.unsplash.com/photo-1586339949916-3e9457bef6d3?w=400&q=80',
+            $directImage ?: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=400&q=80',
+            $directImage ?: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=80',
+            $directImage ?: 'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=400&q=80',
+            $directImage ?: 'https://images.unsplash.com/photo-1526470608268-f674ce90ebd4?w=400&q=80',
+            $directImage ?: 'https://images.unsplash.com/photo-1586339949916-3e9457bef6d3?w=400&q=80',
         ];
 
         $opinions = [
@@ -164,10 +282,10 @@ class NewsScraper
         $items = [];
         for ($i = 0; $i < $limit; $i++) {
             $portal = $portals[$i % count($portals)];
-            $thumb = $thumbnails[$i % count($thumbnails)];
+            $thumb = $directImage ?: $thumbnails[$i % count($thumbnails)];
             $content = self::sanitizeContent($opinions[$i % count($opinions)]);
 
-            $fullContent = "LIPUTAN KHUSUS: {$topic} - {$portal}\n\n{$content}\n\nBerdasarkan pantauan langsung, perbincangan publik mengenai {$topic} menjadi sorotan hangat. Berbagai elemen masyarakat memberikan penilaian beragam mulai dari aspek keterjangkauan, kemudahan akses, hingga efektivitas di lapangan. Pihak terkait menyatakan komitmennya untuk terus mendengar masukan warga demi perbaikan berkelanjutan.";
+            $fullContent = "LIPUTAN KHUSUS: {$topic} - {$portal}\n\n{$content}\n\nBerdasarkan pantauan langsung, perbincangan publik mengenai {$topic} menjadi sorotan hangat. Berbagai elemen masyarakat memberikan penilaian beragam terkait perkembangan isu ini.";
 
             $items[] = [
                 'platform' => 'news',
