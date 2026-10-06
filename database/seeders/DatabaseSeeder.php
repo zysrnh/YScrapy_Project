@@ -15,11 +15,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // Jalankan 1 sesi scraping sample otomatis agar dashboard ada datanya
+        $scraperManager = app(\App\Services\Scrapers\ScraperManager::class);
+        $scraperManager->execute('all', 'Layanan Paspor Online M-Paspor', 16);
     }
 }
