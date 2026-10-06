@@ -18,8 +18,9 @@ class ScrapedFeedback extends Model
         'author_name',
         'author_handle',
         'content_raw',
-        'content_clean',
+        'full_content',
         'source_url',
+        'thumbnail_url',
         'sentiment_label',
         'sentiment_score',
         'sentiment_tokens',
@@ -52,6 +53,24 @@ class ScrapedFeedback extends Model
             'positive' => 'Positif',
             'negative' => 'Negatif',
             default => 'Netral',
+        };
+    }
+
+    /**
+     * Fallback gambar jika thumbnail asli kosong.
+     */
+    public function getDisplayThumbnailAttribute(): string
+    {
+        if (!empty($this->thumbnail_url)) {
+            return $this->thumbnail_url;
+        }
+
+        return match ($this->platform) {
+            'youtube' => 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=300&q=80',
+            'news' => 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=300&q=80',
+            'twitter' => 'https://images.unsplash.com/photo-1611605698335-8b1569810432?w=300&q=80',
+            'google_review' => 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=300&q=80',
+            default => 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=300&q=80',
         };
     }
 }

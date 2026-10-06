@@ -214,28 +214,41 @@
             <div class="space-y-3">
                 @forelse($recentFeedbacks as $item)
                     <div class="glass-card p-4 rounded-md">
-                        <div class="flex items-center justify-between gap-2">
-                            <div class="flex items-center space-x-2">
-                                <span class="text-xs font-bold text-white">{{ $item->author_name }}</span>
-                                <span class="text-[11px] text-ys-muted">({{ ucfirst($item->platform) }})</span>
+                        <div class="flex flex-col sm:flex-row items-start gap-3">
+                            <!-- Thumbnail -->
+                            <div class="w-full sm:w-20 h-24 sm:h-20 rounded-md overflow-hidden bg-ys-glass border border-ys-border/40 flex-shrink-0">
+                                <img src="{{ $item->display_thumbnail }}" 
+                                     alt="Thumbnail {{ $item->author_name }}" 
+                                     class="w-full h-full object-cover"
+                                     loading="lazy"
+                                     onerror="this.src='https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=300&q=80'">
                             </div>
-                            <span class="px-2 py-0.5 rounded text-[11px] font-semibold {{ $item->sentiment_badge_class }}">
-                                {{ $item->sentiment_label_indo }} ({{ $item->sentiment_score }})
-                            </span>
-                        </div>
-                        <p class="mt-2 text-xs sm:text-sm text-ys-main/90 leading-relaxed">
-                            "{{ $item->content_raw }}"
-                        </p>
-                        @if(!empty($item->sentiment_tokens))
-                            <div class="mt-2.5 flex flex-wrap items-center gap-1.5">
-                                <span class="text-[10px] text-ys-muted">Keyword terdeteksi:</span>
-                                @foreach($item->sentiment_tokens as $token)
-                                    <span class="text-[10px] px-1.5 py-0.5 rounded {{ ($token['weight'] ?? 0) > 0 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300' }}">
-                                        {{ $token['word'] ?? '' }} ({{ $token['weight'] ?? 0 }})
+
+                            <div class="flex-grow w-full space-y-1.5">
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-xs font-bold text-white">{{ $item->author_name }}</span>
+                                        <span class="text-[11px] text-ys-muted">({{ ucfirst($item->platform) }})</span>
+                                    </div>
+                                    <span class="px-2 py-0.5 rounded text-[11px] font-semibold {{ $item->sentiment_badge_class }}">
+                                        {{ $item->sentiment_label_indo }} ({{ $item->sentiment_score }})
                                     </span>
-                                @endforeach
+                                </div>
+                                <p class="text-xs sm:text-sm text-ys-main/90 leading-relaxed line-clamp-3">
+                                    "{{ $item->content_raw }}"
+                                </p>
+                                @if(!empty($item->sentiment_tokens))
+                                    <div class="flex flex-wrap items-center gap-1.5 pt-1">
+                                        <span class="text-[10px] text-ys-muted">Keyword:</span>
+                                        @foreach($item->sentiment_tokens as $token)
+                                            <span class="text-[10px] px-1.5 py-0.5 rounded {{ ($token['weight'] ?? 0) > 0 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300' }}">
+                                                {{ $token['word'] ?? '' }} ({{ $token['weight'] ?? 0 }})
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
-                        @endif
+                        </div>
                     </div>
                 @empty
                     <div class="text-center text-xs text-ys-muted py-8">
